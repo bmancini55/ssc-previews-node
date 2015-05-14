@@ -1,13 +1,13 @@
 <div class="row top-nav">
     <nav class="col-sm-12">
         <ul class="pagination">
-            <li class="{{#if items.isFistPage }}disabled{{/if}}">
-                <a href="/?page={{items.pageNumber}}" aria-label="Previous">
+            <li class="{{#if items.isfirstpage }}disabled{{/if}}">
+                <a href="/?page={{items.page}}" aria-label="Previous">
                     <span aria-hidden="true">Previous</span>
                 </a>
             </li>
-            <li class="{{#if items.isLastPage }}disabled{{/if}}">
-                <a href="/?page={{items.pageNumber}}" aria-label="Next">
+            <li class="{{#if items.islastpage }}disabled{{/if}}">
+                <a href="/?page={{items.page}}" aria-label="Next">
                     <span aria-hidden="true">Next</span>
                 </a>
             </li>
@@ -34,13 +34,13 @@
 <div class="row">
     <nav class="col-sm-12">
         <ul class="pagination">
-            <li class="{{#if items.isFistPage }}disabled{{/if}}">
-                <a href="/?page={{items.pageNumber}}" aria-label="Previous">
+            <li class="{{#if items.isfirstpage }}disabled{{/if}}">
+                <a href="/?page={{items.page}}" aria-label="Previous">
                     <span aria-hidden="true">Previous</span>
                 </a>
             </li>
-            <li class="{{#if items.isLastPage }}disabled{{/if}}">
-                <a href="/?page={{items.pageNumber}}" aria-label="Next">
+            <li class="{{#if items.islastpage }}disabled{{/if}}">
+                <a href="/?page={{items.page}}" aria-label="Next">
                     <span aria-hidden="true">Next</span>
                 </a>
             </li>

@@ -1,3 +1,9 @@
 module.exports = {
-  port: 5050  
-}
+  port: 5050,
+  mysql: {
+    host: 'localhost',
+    database: 'dbname',
+    user: 'user',
+    password: 'password'
+  }
+};
