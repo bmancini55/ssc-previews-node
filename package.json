@@ -1,0 +1,29 @@
+{
+  "name": "ssc-previews-node",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "test": "grunt validate"
+  },
+  "author": "Brian Mancini <bmancini@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.12.3",
+    "express-hbs": "^0.8.4",
+    "q": "^1.4.0",
+    "serve-static": "^1.9.2",
+    "underscore": "^1.8.3"
+  },
+  "devDependencies": {
+    "bower": "^1.4.1",
+    "chai": "^2.3.0",
+    "grunt": "^0.4.5",
+    "grunt-contrib-jshint": "^0.11.2",
+    "grunt-contrib-watch": "^0.6.1",
+    "grunt-express-runner": "^0.2.1",
+    "grunt-mocha-test": "^0.12.7",
+    "mocha": "^2.2.4",
+    "sinon": "^1.14.1"
+  }
+}

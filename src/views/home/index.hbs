@@ -1,0 +1,49 @@
+<div class="row top-nav">
+    <nav class="col-sm-12">
+        <ul class="pagination">
+            <li class="{{#if items.isFistPage }}disabled{{/if}}">
+                <a href="/?page={{items.pageNumber}}" aria-label="Previous">
+                    <span aria-hidden="true">Previous</span>
+                </a>
+            </li>
+            <li class="{{#if items.isLastPage }}disabled{{/if}}">
+                <a href="/?page={{items.pageNumber}}" aria-label="Next">
+                    <span aria-hidden="true">Next</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<div class="row item-list"> 
+    {{#each items}}    
+    <div class="col-sm-3 item">
+        <div class="img-container">
+            <img class="img-responsive" src="~/img/item/hi-res/201505/{{stocknumber}}.jpg" />
+        </div>
+        <div class="contents">
+            <p>{{copy.title}}</p>
+            <p>{{publisher}}</p>
+            <p>{{copy.preview}}</p>
+            <p>{{copy.description}}</p>
+        </div>
+    </div>
+    {{/each}}       
+</div>
+
+<div class="row">
+    <nav class="col-sm-12">
+        <ul class="pagination">
+            <li class="{{#if items.isFistPage }}disabled{{/if}}">
+                <a href="/?page={{items.pageNumber}}" aria-label="Previous">
+                    <span aria-hidden="true">Previous</span>
+                </a>
+            </li>
+            <li class="{{#if items.isLastPage }}disabled{{/if}}">
+                <a href="/?page={{items.pageNumber}}" aria-label="Next">
+                    <span aria-hidden="true">Next</span>
+                </a>
+            </li>
+        </ul>
+    </nav>
+</div>
