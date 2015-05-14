@@ -26,6 +26,7 @@ build/Release
 node_modules
 bower_components
 src/public/lib
+src/public/img/item
 
 # Users Environment Variables
 .lock-wscript
