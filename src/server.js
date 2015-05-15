@@ -3,19 +3,9 @@ var express = require('express')
   , hbs     = require('express-hbs')
 
   , config  = require('../config')
-  , mysql   = require('mysql')
-
-  , conn
   , app
   ;
 
-// Create MySQL connection
-conn = mysql.createConnection({
-  host: config.mysql.host,
-  database: config.mysql.database,
-  user: config.mysql.user,
-  password: config.mysql.password
-}); 
 
 // Create Express App
 app = express();
@@ -41,13 +31,18 @@ app.get('/', function(req, res) {
         items: null        
       };
 
-  // TODO move to mysql service
-  conn.connect();
-  conn.query('select * from previewsitem order by itemid;', function(err, results) {
-    if(err) {
-      conn.end();
-      return res.status(500).send(err);      
-    } else {
+  var Connection = require('./services/mysql')
+    , PreviewsItemSvc = require('./services/previewsitem-service')
+    , PreviewsCopySvc = require('./services/previewscopy-service');
+
+  var conn = new Connection(config);
+  var itemSvc = new PreviewsItemSvc(conn);
+  var copySvc = new PreviewsCopySvc(conn);
+
+  
+  itemSvc.findAll(function(err, results) {
+    if(err) return res.status(500).send(err);    
+    else {
 
       // TODO convert to PagedArray
       model.items = results.slice(pagestart, pagesize);
@@ -59,13 +54,11 @@ app.get('/', function(req, res) {
       model.items.isfirstpage = page === 1;
 
       // JOIN copy data as seperate object
-      conn.query('select * from previewscopy;', function(err, results) {
-        conn.end();  
-        var lookup = {};
-        if(err) {          
-          return res.status(500).send(err);
-        } else {
+      copySvc.findAll(function(err, result) {
+        if(err) return res.status(500).send(err);
+        else {
 
+          var lookup = {};          
           results.forEach(function(result) {
             lookup[result.stocknumber] = result;
           });
