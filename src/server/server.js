@@ -1,8 +1,8 @@
-var express = require('express')
-  , static  = require('serve-static')
-  , hbs     = require('express-hbs')
+var express   = require('express')
+  , srvstatic = require('serve-static')
+  , hbs       = require('express-hbs')
 
-  , config  = require('../config')
+  , config    = require('../config')
   , app
   ;
 
@@ -18,7 +18,7 @@ app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 
 // Configure Static Files
-app.use(static(__dirname + '/public'));
+app.use(srvstatic(__dirname + '/public'));
 
 // Create home route
 app.get('/', function(req, res) {

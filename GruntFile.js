@@ -7,6 +7,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-watch'); 
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-clean'); 
+  grunt.loadNpmTasks('grunt-babel');
   
   grunt.initConfig({    
     jshint: {
@@ -33,14 +34,14 @@ module.exports = function(grunt) {
     },    
     expressrunner: {
       options: {
-        script: 'src/server.js',
+        script: 'dist/server.js',
         debug: 'previews*'
       }
     },
     watch: {
       server: { 
         files: 'src/**/*',
-        tasks: [ 'expressrunner' ],
+        tasks: [ 'build', 'expressrunner' ],
         options: {
           interrupt: true,
           atBegin: true
@@ -48,7 +49,7 @@ module.exports = function(grunt) {
       }
     },
     clean: {
-      lib: ['src/public/lib']
+      lib: [ 'dist' ]
     },
     copy: {      
       lib: {
@@ -56,19 +57,48 @@ module.exports = function(grunt) {
           expand: true,
           cwd: 'bower_components/bootstrap/dist',
           src: '**/*',                       
-          dest: 'src/public/lib/bootstrap'
+          dest: 'dist/public/lib/bootstrap'
         }, {
           expand: true,
           cwd: 'bower_components/jquery/dist',
           src: '**/*',
-          dest: 'src/public/lib/jquery'
+          dest: 'dist/public/lib/jquery'
+        }]
+      },
+      client: {
+        files: [{
+          expand: true,
+          cwd: 'src/client',
+          src: '**/*',
+          dest: 'dist/public'
+        }]
+      },
+      server: {
+        files: [{
+          expand: true,
+          cwd: 'src/server',
+          src: '**/*.hbs',
+          dest: 'dist'
         }]
       }
-    } 
+    },
+    babel: {
+      options: {        
+        'optional': [ 'es7.asyncFunctions' ]
+      },
+      server: {
+        files: [{
+          expand: true,
+          cwd: 'src/server',
+          src: '**/*.js',
+          dest: 'dist'
+        }]
+      }
+    }
   });
 
   grunt.registerTask('validate', [ 'jshint', 'mochaTest' ]);  
-  grunt.registerTask('build', [ 'clean', 'copy' ]);
+  grunt.registerTask('build', [ 'clean', 'copy', 'babel' ]);
   grunt.registerTask('run', [ 'watch' ]);
   
 };
