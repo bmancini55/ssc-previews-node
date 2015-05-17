@@ -1,5 +1,5 @@
 
-.top-nav {
+.top-spacing {
     margin-top: 100px;
 }
 
@@ -26,4 +26,8 @@
 .item-list .item .contents {
     height: 200px;
     overflow-y: scroll;
+}
+
+.search-form {
+    margin-bottom: 18px;
 }

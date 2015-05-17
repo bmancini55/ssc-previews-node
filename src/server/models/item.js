@@ -1,4 +1,4 @@
-let mongoose = require('mongoose');
+let mongoose  = require('mongoose');
 let pagedlist = require('../helpers/pagedlist');
 
 let Person = {
@@ -32,7 +32,7 @@ let Preview = {
   Page: String
 };
 
-let ItemSchema = mongoose.Schema({
+let Item = mongoose.Schema({
   StockNumber: String,
   ParentItem: String,
   Title: String,
@@ -74,39 +74,39 @@ let ItemSchema = mongoose.Schema({
 }, 
   { collection: 'item' }
 );
-ItemSchema.statics.findAll = findAll;
 
 
-/**
- * Finds all Items
- *
- * @param {Number} page
- * @param {Number} pagesize 
- * @return {Array[Item]}
- */
-async function findAll({ page = 1, pagesize = 24 }) {  
+async function search({ page = 1, pagesize = 24, previews, publisher, writer, artist }) {
+  let filter = {};
 
-  let options = {
-    skip: (page - 1) * pagesize,
-    limit: pagesize    
-  };
+  if(previews) {
+    filter['Previews.PreviewNumber'] = new RegExp('^' + previews);
+  }
 
-  let sorter = {
-    'Previews.PreviewNumber': 'asc'
-  };
-  
-  let items = await this
-    .find(null, null, options)
-    .sort(sorter)
+  if(publisher) {
+    filter['Publisher._id'] = mongoose.Types.ObjectId(publisher);
+  }
+
+  if(writer) {
+    filter['Writer._id'] = mongoose.Types.ObjectId(writer);
+  }
+
+  if(artist) {
+    filter['Artist._id'] = mongoose.Types.ObjectId(artist);
+  }
+
+  let results = await this
+    .find(filter, null, { skip: (page - 1) * pagesize, limit: pagesize })
+    .sort({ 'Previews.PreviewNumber': 1 })
     .exec();
 
   let total = await this
-    .count(null)
+    .count(filter)
     .exec();
 
-  return pagedlist(items, page, pagesize, total);
+  return pagedlist(results, page, pagesize, total);
 }
 
-
-// Export Model
-module.exports = mongoose.model('item', ItemSchema);
+Item.statics.search = search;
+require('../helpers/mongoose-plugins')(Item);
+module.exports = mongoose.model('item', Item);

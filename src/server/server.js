@@ -1,9 +1,10 @@
 require('babel/register');
 
-var express   = require('express')
-  , srvstatic = require('serve-static')
-  , hbs       = require('express-hbs')  
+var express     = require('express')
+  , srvstatic   = require('serve-static')
+  , hbs         = require('express-hbs')  
   
+  , hbshelpers  = require('./helpers/handlebars')
   , mongo       = require('./helpers/mongo')
   , controllers = require('./controllers')  
   , app
