@@ -9,8 +9,10 @@
   "author": "Brian Mancini <bmancini@gmail.com>",
   "license": "MIT",
   "dependencies": {
+    "babel": "^5.4.3",
     "express": "^4.12.3",
     "express-hbs": "^0.8.4",
+    "mongoose": "^4.0.3",
     "mysql": "^2.6.2",
     "q": "^1.4.0",
     "serve-static": "^1.9.2",

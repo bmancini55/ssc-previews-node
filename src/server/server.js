@@ -1,8 +1,11 @@
+require('babel/register');
+
 var express   = require('express')
   , srvstatic = require('serve-static')
-  , hbs       = require('express-hbs')
-
-  , config    = require('../config')
+  , hbs       = require('express-hbs')  
+  
+  , mongo       = require('./helpers/mongo')
+  , controllers = require('./controllers')  
   , app
   ;
 
@@ -18,61 +21,12 @@ app.set('view engine', 'hbs');
 app.set('views', __dirname + '/views');
 
 // Configure Static Files
-app.use(srvstatic(__dirname + '/public'));
+app.use('/public', srvstatic(__dirname + '/public'));
 
-// Create home route
-app.get('/', function(req, res) {
-  var page      = req.query.page || 1
-    , pagesize  = req.query.pagesize || 24
-    , pagestart = (page - 1) * pagesize
-    , model = { 
-        page: page, 
-        pagesize: pagesize,
-        items: null        
-      };
+// Add Home Controller
+app.get('/', controllers.home.index);
 
-  var Connection = require('./services/mysql')
-    , PreviewsItemSvc = require('./services/previewsitem-service')
-    , PreviewsCopySvc = require('./services/previewscopy-service');
-
-  var conn = new Connection(config);
-  var itemSvc = new PreviewsItemSvc(conn);
-  var copySvc = new PreviewsCopySvc(conn);
-
-  
-  itemSvc.findAll(function(err, results) {
-    if(err) return res.status(500).send(err);    
-    else {
-
-      // TODO convert to PagedArray
-      model.items = results.slice(pagestart, pagesize);
-      model.items.page = page;
-      model.items.pagesize = pagesize;
-      model.items.totalitems = results.length;      
-      model.items.lastpage = Math.max(results.length / pagesize);
-      model.items.islastpage = model.items.lastpage === page;
-      model.items.isfirstpage = page === 1;
-
-      // JOIN copy data as seperate object
-      copySvc.findAll(function(err, result) {
-        if(err) return res.status(500).send(err);
-        else {
-
-          var lookup = {};          
-          results.forEach(function(result) {
-            lookup[result.stocknumber] = result;
-          });
-          model.items.forEach(function(item) {
-            item.copy = lookup[item.diamondnumber];
-          });
-
-          return res.render('home/index', model);                
-        }
-      });
-    }
-  });    
-});
-
+// Start the application
 app.listen(5050, function() {
   console.log('Server started on port 5050');
 });

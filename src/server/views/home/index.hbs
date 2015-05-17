@@ -19,13 +19,12 @@
     {{#each items}}    
     <div class="col-sm-3 item">
         <div class="img-container">
-            <img class="img-responsive" src="/img/item/hi-res/201505/{{stocknumber}}.jpg" />
+            <img class="img-responsive" src="/public/img/item/hi-res/201505/{{StockNumber}}.jpg" />
         </div>
         <div class="contents">
-            <p>{{copy.title}}</p>
-            <p>{{publisher}}</p>
-            <p>{{copy.preview}}</p>
-            <p>{{copy.description}}</p>
+            <p>{{Title}}</p>
+            <p>{{Publisher.Name}}</p>            
+            <p>{{Description}}</p>
         </div>
     </div>
     {{/each}}       

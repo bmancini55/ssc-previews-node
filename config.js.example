@@ -5,5 +5,8 @@ module.exports = {
     database: 'dbname',
     user: 'user',
     password: 'password'
+  },
+  mongo: {
+    connection: 'mongodb://localhost/ssctest',    
   }
 };

@@ -7,5 +7,6 @@
   "es3": false,
   "nocomma": false,
   "camelcase": false,
-  "singleGroups": false
+  "singleGroups": false,
+  "esnext": true
 }
