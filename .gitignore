@@ -25,8 +25,8 @@ build/Release
 # https://www.npmjs.org/doc/misc/npm-faq.html#should-i-check-my-node_modules-folder-into-git-
 node_modules
 bower_components
-src/public/lib
-src/public/img/item
+src/client/lib
+src/client/img/item
 
 # Users Environment Variables
 .lock-wscript

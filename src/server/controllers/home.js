@@ -12,7 +12,11 @@ async function index(req, res) {
   let writer    = req.query.writer;
   let artist    = req.query.artist;
   
-  let publishers  = await Publisher.findAll({ page: 1, pagesize: 2147483647, sorter: { 'Name': 1 } });
+  let publishers  = await Publisher.findAll({ 
+    page: 1, 
+    pagesize: 2147483647, 
+    sorter: { 'Name': 1 } 
+  });
   let writers     = await Person.findWriters();
   let artists     = await Person.findArtists();
   let items       = await Item.search({
