@@ -1,5 +1,7 @@
 let mongoose  = require('mongoose');
 let pagedlist = require('../helpers/pagedlist');
+let melpers   = require('../helpers/mongoose');
+let es        = require('../helpers/elasticsearch');
 
 let Person = {
   _id: mongoose.Schema.ObjectId,
@@ -107,6 +109,79 @@ async function search({ page = 1, pagesize = 24, previews, publisher, writer, ar
   return pagedlist(results, page, pagesize, total);
 }
 
-Item.statics.search = search;
-require('../helpers/mongoose-plugins')(Item);
+
+
+
+async function elasticsearch({ page = 1, pagesize = 24, previews, publisher, writer, artist, query }) {
+  let client = es.client();
+  let search = {
+    index: 'items',
+    type: 'item',
+    body: {
+      from: (page - 1 ) * pagesize,
+      size: pagesize,
+      query: {
+        filtered: {    
+          filter: {
+            bool: {
+              must: [ ]
+            }
+          },
+          query: {
+            bool: {
+              should: [ ]
+            }
+          }
+        }
+      },
+      sort: 'previews.previewNumber'
+    }    
+  };
+  let filters = search.body.query.filtered.filter.bool.must;
+  let queries = search.body.query.filtered.query.bool.should;
+  
+  if(publisher) {
+    filters.push({
+      term: { 'publisher.id': publisher },    
+    });
+  }
+
+  if(writer) {
+    filters.push({
+      term: { 'writer.id': writer }
+    });      
+  }
+
+  if(artist) {
+    filters.push({
+      term: { 'artist.id': artist }
+    });
+  }      
+
+  if(query) {
+    queries.push.apply(queries, [
+      { match_phrase: { 'title': query } },
+      { match_phrase: { 'publisher.name': query } },
+      { match_phrase: { 'artist.fullName': query } },
+      { match_phrase: { 'writer.fullName': query } }
+    ]);
+  }
+
+  let results = await client.search(search);
+  let hits = results.hits.hits;
+  let total = results.hits.total;
+
+  let ids = hits.map((hit) => mongoose.Types.ObjectId(hit._id));  
+  let docs = await this
+    .find({ _id: { $in: ids }})
+    .sort({ 'previews.previewNumber': '1' })
+    .exec();
+
+  return pagedlist(docs, page, pagesize, total);
+}
+
+Item.statics.search         = search;
+Item.statics.elasticsearch  = elasticsearch;
+
+Item.plugin(melpers);
 module.exports = mongoose.model('item', Item);

@@ -28,6 +28,6 @@ app.use('/public', srvstatic(__dirname + '/public'));
 app.get('/', controllers.home.index);
 
 // Start the application
-app.listen(5050, function() {
-  console.log('Server started on port 5050');
+app.listen(5000, function() {
+  console.log('Server started on port 5000');
 });

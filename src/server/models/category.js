@@ -1,8 +1,9 @@
 let mongoose = require('mongoose');
+let melpers  = require('../helpers/mongoose');
 
 let Category = mongoose.Schema({
   Name: String,  
 }, { collection: 'category' });
 
-require('../helpers/mongoose-plugins')(Category);
+Category.plugin(melpers);
 module.exports = mongoose.model('category', Category);

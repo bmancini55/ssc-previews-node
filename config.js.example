@@ -1,5 +1,4 @@
-module.exports = {
-  port: 5050,
+module.exports = {  
   mysql: {
     host: 'localhost',
     database: 'dbname',
@@ -8,5 +7,8 @@ module.exports = {
   },
   mongo: {
     connection: 'mongodb://localhost/ssctest',    
+  },
+  elasticsearch: {
+    uri: 'localhost:9200',    
   }
 };

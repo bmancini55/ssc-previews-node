@@ -5,12 +5,8 @@ let Publisher = Models.Publisher;
 let Person    = Models.Person;
 
 async function index(req, res) {
-  let page      = req.query.page;
-  let pagesize  = req.query.pagesize;
-  let previews  = 'MAY15';
-  let publisher = req.query.publisher;
-  let writer    = req.query.writer;
-  let artist    = req.query.artist;
+  let { page, pagesize, publisher, writer, artist, query } = req.query;  
+  let previews  = 'MAY15';  
   
   let publishers  = await Publisher.findAll({ 
     page: 1, 
@@ -19,13 +15,14 @@ async function index(req, res) {
   });
   let writers     = await Person.findWriters();
   let artists     = await Person.findArtists();
-  let items       = await Item.search({
+  let items       = await Item.elasticsearch({
     page: page, 
     pagesize: pagesize,
     previews: previews,
     publisher: publisher,
     writer: writer,
-    artist: artist
+    artist: artist,
+    query: query
   });
 
   let model = { 
@@ -37,7 +34,8 @@ async function index(req, res) {
     artists: artists,
     publisher: publisher,
     writer: writer,
-    artist: artist
+    artist: artist,
+    query: query
   };
   res.render('home/index', model);
 }

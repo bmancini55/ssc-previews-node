@@ -1,4 +1,5 @@
 let mongoose = require('mongoose');
+let melpers  = require('../helpers/mongoose');
 
 let Person = mongoose.Schema({
   FullName: String,
@@ -34,5 +35,5 @@ Person.statics.findWriters = findWriters;
 Person.statics.findArtists = findArtists;
 Person.statics.findCoverArtists = findCoverArtists;
 
-require('../helpers/mongoose-plugins')(Person);
+Person.plugin(melpers);
 module.exports = mongoose.model('person', Person);

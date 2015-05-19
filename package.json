@@ -10,6 +10,7 @@
   "license": "MIT",
   "dependencies": {
     "babel": "^5.4.3",
+    "elasticsearch": "^4.0.2",
     "express": "^4.12.3",
     "express-hbs": "^0.8.4",
     "mongoose": "^4.0.3",
