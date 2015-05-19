@@ -2,7 +2,8 @@ require('babel/register');
 
 var express     = require('express')
   , srvstatic   = require('serve-static')
-  , hbs         = require('express-hbs')  
+  , hbs         = require('express-hbs') 
+  , timer       = require('response-time') 
   
   , hbshelpers  = require('./helpers/handlebars')
   , mongo       = require('./helpers/mongo')
@@ -23,6 +24,9 @@ app.set('views', __dirname + '/views');
 
 // Configure Static Files
 app.use('/public', srvstatic(__dirname + '/public'));
+
+// Add response timer
+app.use(timer());
 
 // Add Home Controller
 app.get('/', controllers.home.index);

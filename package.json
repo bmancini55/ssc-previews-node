@@ -16,6 +16,7 @@
     "mongoose": "^4.0.3",
     "mysql": "^2.6.2",
     "q": "^1.4.0",
+    "response-time": "^2.3.1",
     "serve-static": "^1.9.2",
     "underscore": "^1.8.3"
   },
