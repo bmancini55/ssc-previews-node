@@ -84,7 +84,8 @@ module.exports = function(grunt) {
     },
     babel: {
       options: {        
-        'optional': [ 'es7.asyncFunctions' ]
+        'optional': [ 'es7.asyncFunctions' ],
+        'sourceMaps': true
       },
       server: {
         files: [{
@@ -92,6 +93,14 @@ module.exports = function(grunt) {
           cwd: 'src/server',
           src: '**/*.js',
           dest: 'dist'
+        }]
+      },
+      scripts: {
+        files: [{
+          expand: true,
+          cwd: 'src/scripts',
+          src: '**/*.js',
+          dest: 'dist/scripts'
         }]
       }
     }
