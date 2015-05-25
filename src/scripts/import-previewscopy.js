@@ -8,27 +8,18 @@ let filepath = process.argv[2];
 
 function exec(filepath) {
 
-  let fields = null;
+  let fields = [ 'diamd_no', 'title', 'price', 'preview', 'description' ];
   let file = fs.createReadStream(filepath);
-  let parser = csv.parse({ delimiter: '\t', quote: '^' });  // tabs with no quotes
+  let parser = csv.parse({ delimiter: '\t', quote: '"' });  // tabs with quote
   let transform = csv.transform(function(record, next) {  
+  
+    let result = {};
+    record.forEach((val, idx) => { 
+      result[fields[idx]] = val;        
+    });
+    
+    next(null, result);
 
-    // convert the first row into the fields based ordinal position
-    if(!fields) {
-      fields = record.map((val) => val.toLowerCase());
-    } 
-
-    // process the array of values by converting into an object
-    // matching the field names from the origin row
-    else {
-
-      let result = {};
-      record.forEach((val, idx) => { 
-        result[fields[idx]] = val;        
-      });
-      
-      next(null, result);
-    }
   });
 
   // connect to mongo 
@@ -42,8 +33,18 @@ function exec(filepath) {
 
     // insert the transformed object into the datastore
     transform.on('data', function(data) {
-      console.log('Inserting: ' + data.diamd_no);    
-      collection.insert(data);
+      
+
+      let query = { 
+        diamd_no: data.diamd_no 
+      };
+      let update = { 
+        $set: { copy: data }        
+      };
+
+      collection.findOneAndUpdate(query, update, function(err, result) {
+        if(!err) console.log('Inserted: ' + data.diamd_no);    
+      });
     });
 
     // close the connection when done transforming
