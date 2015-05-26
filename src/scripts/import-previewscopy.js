@@ -1,30 +1,26 @@
 let fs          = require('fs');
 let csv         = require('csv');
-let Mongo       = require('mongodb');
+let mongoose    = require('../helpers/mongo');
+let Models      = require('../models');
 let config      = require('../../config');
 
-let filepath = process.argv[2];
+function exec(filepath, { PreviewsItem }) {
+  return new Promise(function(resolve) {
 
-
-function exec(filepath) {
-
-  let fields = [ 'diamd_no', 'title', 'price', 'preview', 'description' ];
-  let file = fs.createReadStream(filepath);
-  let parser = csv.parse({ delimiter: '\t', quote: '"' });  // tabs with quote
-  let transform = csv.transform(function(record, next) {  
-  
-    let result = {};
-    record.forEach((val, idx) => { 
-      result[fields[idx]] = val;        
-    });
+    let fields = [ 'diamd_no', 'title', 'price', 'preview', 'description' ];
+    let file = fs.createReadStream(filepath);
+    let parser = csv.parse({ delimiter: '\t', quote: '"' });  // tabs with quote
+    let transform = csv.transform(function(record, next) {  
     
-    next(null, result);
+      let result = {};
+      record.forEach((val, idx) => { 
+        result[fields[idx]] = val;        
+      });
+      
+      next(null, result);
 
-  });
+    });
 
-  // connect to mongo 
-  Mongo.MongoClient.connect(config.mongo.connection, function(err, db) {
-    var collection = db.collection('previewsitem');
 
     // parse and transform into an object
     file
@@ -34,7 +30,6 @@ function exec(filepath) {
     // insert the transformed object into the datastore
     transform.on('data', function(data) {
       
-
       let query = { 
         diamd_no: data.diamd_no 
       };
@@ -42,22 +37,39 @@ function exec(filepath) {
         $set: { copy: data }        
       };
 
-      collection.findOneAndUpdate(query, update, function(err, result) {
-        if(!err) console.log('Inserted: ' + data.diamd_no);    
+      PreviewsItem.findOneAndUpdate(query, update, function(err, result) {
+        if(!err) console.log('Inserted: ' + data.diamd_no);
       });
     });
 
     // close the connection when done transforming
     transform.on('finish', function() {
       console.log('Insertions complete');
-      db.close();
+      resolve();      
     });
-
+    
   });
 }
 
-if(!process.argv[2]) {
-  console.log('You must supply a file path');  
-} else {
-  exec(process.argv[2]);
-}
+
+
+mongoose.on('open', function() {
+  let file = process.argv[2];
+
+  if(!file) {
+    console.log('You must supply a file path');
+    mongoose.close();
+  }
+
+  exec(file, Models)
+    .then(
+      function() {
+        mongoose.close();        
+      }, 
+      function(err) {
+        mongoose.close();
+        console.log(err.toString());
+        console.log(err.stack);
+      }
+    );
+});
