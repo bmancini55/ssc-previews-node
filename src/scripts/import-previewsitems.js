@@ -1,6 +1,5 @@
 let fs          = require('fs');
 let csv         = require('csv');
-let Q           = require('q');
 let mongoose    = require('../helpers/mongo');
 let Models      = require('../models');
 let config      = require('../../config');

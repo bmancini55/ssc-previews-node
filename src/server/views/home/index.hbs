@@ -5,7 +5,7 @@
             <select id="publishers" name="publisher" class="form-control">
                 <option value=""></option>
                 {{#each publishers}}
-                <option value="{{_id}}" {{#ifc _id '==' ../publisher }}selected="selected"{{/ifc}}>{{Name}}</option>
+                <option value="{{_id}}" {{#ifc _id '==' ../publisher }}selected="selected"{{/ifc}}>{{name}}</option>
                 {{/each}}
             </select>
         </div>
@@ -14,7 +14,7 @@
             <select id="writers" name="writer" class="form-control">
                 <option value=""></option>
                 {{#each writers}}
-                <option value="{{_id}}" {{#ifc _id '==' ../writer }}selected="selected"{{/ifc}}>{{FullName}}</option>
+                <option value="{{_id}}" {{#ifc _id '==' ../writer }}selected="selected"{{/ifc}}>{{fullname}}</option>
                 {{/each}}
             </select>
         </div>
@@ -23,7 +23,7 @@
             <select id="artists" name="artist" class="form-control">
                 <option value=""></option>
                 {{#each artists}}
-                <option value="{{_id}}" {{#ifc _id '==' ../artist }}selected="selected"{{/ifc}}>{{FullName}}</option>
+                <option value="{{_id}}" {{#ifc _id '==' ../artist }}selected="selected"{{/ifc}}>{{fullname}}</option>
                 {{/each}}
             </select>
         </div>
@@ -41,12 +41,12 @@
     {{#each items}}    
     <div class="col-sm-3 item">
         <div class="img-container">
-            <img class="img-responsive" src="/public/img/item/hi-res/201505/{{StockNumber}}.jpg" />
+            <img class="img-responsive" src="/public/img/item/hi-res/201505/{{stock_no}}.jpg" />
         </div>
         <div class="contents">
-            <p>{{Title}}</p>
-            <p>{{Publisher.Name}}</p>            
-            <p>{{Description}}</p>
+            <p>{{title}}</p>
+            <p>{{publisher.name}}</p>            
+            <p>{{description}}</p>
         </div>
     </div>
     {{/each}}       

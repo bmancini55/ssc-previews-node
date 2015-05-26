@@ -36,7 +36,7 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
   let series = await getOrAdd({
     items:    items,
     name:     'series',
-    findOne:  (item) => Series.findOne({ _id: item.series_code }),
+    findOne:  (key)  => Series.findOne({ _id: key }),
     keyGen:   (item) => item.series_code,
     insGen:   (item) => new Series({ _id: item.series_code, name: item.main_desc })
   });  
@@ -44,7 +44,7 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
   let publishers = await getOrAdd({
     items:    items,
     name:     'publishers',
-    findOne:  (item) => Publisher.findOne({ name: item.publisher }),
+    findOne:  (key)  => Publisher.findOne({ name: key }),
     keyGen:   (item) => item.publisher,
     insGen:   (item) => new Publisher({ name: item.publisher })
   });
@@ -52,7 +52,7 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
   let writers = await getOrAdd({
     items:    items, 
     name:     'writers',
-    findOne:  (item) => Person.findOne({ fullname: item.writer }),
+    findOne:  (key)  => Person.findOne({ fullname: key }),
     keyGen:   (item) => item.writer,
     insGen:   (item) => new Person({ fullname: item.writer, writer: true, artist: false, coverartist: false }),
     updGen:   (inst) => inst.writer = true
@@ -61,7 +61,7 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
   let artists = await getOrAdd({
     items:    items,
     name:     'artists',
-    findOne:  (item) => Person.findOne({ fullname: item.artist }),
+    findOne:  (key)  => Person.findOne({ fullname: key }),
     keyGen:   (item) => item.artist,
     insGen:   (item) => new Person({ fullname: item.artist, writer: false, artist: true, coverartist: false }),
     updGen:   (inst) => inst.artist = true
@@ -70,7 +70,7 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
   let coverartists = await getOrAdd({
     items:    items,
     name:     'cover artists',
-    findOne:  (item) => Person.findOne({ fullname: item.cover_artist }),
+    findOne:  (key)  => Person.findOne({ fullname: key }),
     keyGen:   (item) => item.cover_artist,
     insGen:   (item) => new Person({ fullname: item.cover_artist, writer: false, artist: false, coverartist: true }),
     updGen:   (inst) => inst.coverartist = true
@@ -229,7 +229,7 @@ async function getOrAdd({ items, name, findOne, keyGen, insGen, updGen = null })
     progress2.tick();
   }
 
-  // process the inserts
+  // process the inserts  
   if(inserts.size > 0) {
     let progress3 = new Progress(' inserting [:bar] :current/:total', { total: inserts.size, width: 50 });  
     for (let kvp of inserts) {

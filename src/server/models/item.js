@@ -77,24 +77,24 @@ async function search({ page = 1, pagesize = 24, previews, publisher, writer, ar
   let filter = {};
 
   if(previews) {
-    filter['Previews.PreviewNumber'] = new RegExp('^' + previews);
+    filter['previews.previews_no'] = new RegExp('^' + previews);
   }
 
   if(publisher) {
-    filter['Publisher._id'] = mongoose.Types.ObjectId(publisher);
+    filter['publisher._id'] = mongoose.Types.ObjectId(publisher);
   }
 
   if(writer) {
-    filter['Writer._id'] = mongoose.Types.ObjectId(writer);
+    filter['writer._id'] = mongoose.Types.ObjectId(writer);
   }
 
   if(artist) {
-    filter['Artist._id'] = mongoose.Types.ObjectId(artist);
+    filter['artist._id'] = mongoose.Types.ObjectId(artist);
   }
 
   let results = await this
     .find(filter, null, { skip: (page - 1) * pagesize, limit: pagesize })
-    .sort({ 'Previews.PreviewNumber': 1 })
+    .sort({ 'previews.previews_no': 1 })
     .exec();
 
   let total = await this
