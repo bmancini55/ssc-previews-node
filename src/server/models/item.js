@@ -104,7 +104,37 @@ async function search({ page = 1, pagesize = 24, previews, publisher, writer, ar
   return pagedlist(results, page, pagesize, total);
 }
 
+async function saveElasticsearch() {  
+  let client = es.client();
+  let body = {
+    stock_no: this.stock_no,
+    title: this.title,
+    description: this.description,
+    variant_desc: this.variant_desc,
+    series: this.series,
+    publisher: this.publisher,
+    upc_no: this.upc_no,
+    isbn_no: this.isbn_no,
+    ean_no: this.ean_no,
+    ship_date: this.ship_date,
+    category: this.category,
+    genre: this.genre,
+    mature: this.mature,
+    adult: this.adult,
+    writer: this.writer,
+    artist: this.artist,
+    cover_artist: this.cover_artist,
+    previews: this.previews
+  };
 
+  await client.index({
+    index: 'items',
+    type: 'item',
+    id: this._id.toString(),
+    body: body
+  });
+
+}
 
 
 async function elasticsearch({ page = 1, pagesize = 24, previews, publisher, writer, artist, query }) {
@@ -129,7 +159,7 @@ async function elasticsearch({ page = 1, pagesize = 24, previews, publisher, wri
           }
         }
       },
-      sort: 'previews.previewNumber'
+      sort: 'previews.previews_no'
     }    
   };
   let filters = search.body.query.filtered.filter.bool.must;
@@ -137,19 +167,19 @@ async function elasticsearch({ page = 1, pagesize = 24, previews, publisher, wri
   
   if(publisher) {
     filters.push({
-      term: { 'publisher.id': publisher },    
+      term: { 'publisher._id': publisher },    
     });
   }
 
   if(writer) {
     filters.push({
-      term: { 'writer.id': writer }
+      term: { 'writer._id': writer }
     });      
   }
 
   if(artist) {
     filters.push({
-      term: { 'artist.id': artist }
+      term: { 'artist._id': artist }
     });
   }      
 
@@ -157,8 +187,8 @@ async function elasticsearch({ page = 1, pagesize = 24, previews, publisher, wri
     queries.push.apply(queries, [
       { match_phrase: { 'title': query } },
       { match_phrase: { 'publisher.name': query } },
-      { match_phrase: { 'artist.fullName': query } },
-      { match_phrase: { 'writer.fullName': query } }
+      { match_phrase: { 'artist.fullname': query } },
+      { match_phrase: { 'writer.fullname': query } }
     ]);
   }
 
@@ -174,6 +204,8 @@ async function elasticsearch({ page = 1, pagesize = 24, previews, publisher, wri
 
   return pagedlist(docs, page, pagesize, total);
 }
+
+Item.methods.saveElasticsearch = saveElasticsearch;
 
 Item.statics.search         = search;
 Item.statics.elasticsearch  = elasticsearch;

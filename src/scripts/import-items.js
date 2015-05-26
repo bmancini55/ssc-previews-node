@@ -186,6 +186,8 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
     });
 
     await newItem.save();
+    await newItem.saveElasticsearch();
+    
     progress.tick();
   }
 

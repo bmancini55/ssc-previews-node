@@ -15,7 +15,7 @@ async function index(req, res) {
   });
   let writers     = await Person.findWriters();
   let artists     = await Person.findArtists();
-  let items       = await Item.search({
+  let items       = await Item.elasticsearch({
     page: page, 
     pagesize: pagesize,
     previews: previews,
