@@ -79,7 +79,7 @@ async function processItems(preview) {
 
 
   console.log('Processing items');
-  let progress = new Progress(' -inserting [:bar] :current/:total', { total: items.length, width: 50 });
+  let progress = new Progress(' inserting [:bar] :current/:total', { total: items.length, width: 50 });
 
   for(let item of items) {    
     let genre       = genres.get(item.genre);
