@@ -3,5 +3,7 @@ module.exports = {
   Genre: require('./genre'),  
   Item: require('./item'),
   Person: require('./person'),
-  Publisher: require('./publisher')  
+  PreviewsItem: require('./previewsitem'),
+  Publisher: require('./publisher'),
+  Series: require('./series')
 };

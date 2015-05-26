@@ -5,77 +5,72 @@ let es        = require('../helpers/elasticsearch');
 
 let Person = {
   _id: mongoose.Schema.ObjectId,
-  FullName: String
+  fullname: String
 };
 
 let Series = { 
   _id: String,
-  Name: String
+  name: String
 };
 
 let Publisher= {
   _id: mongoose.Schema.ObjectId,
-  Name: String
+  name: String
 };
 
 let Category = {
   _id: String,
-  Name: String,
-  ForConsumers: Boolean
+  name: String,
+  forconsumers: Boolean
 };
 
 let Genre = {
   _id: String,
-  Name: String
+  name: String
 };
 
 let Preview = { 
-  PreviewNumber: String,
-  Page: String
+  _id: false,
+  previews_no: String,
+  page: String  
 };
 
 let Item = mongoose.Schema({
-  StockNumber: String,
-  ParentItem: String,
-  Title: String,
-  Description: String,
-  VariantDescription: String,
-  Series: Series,
-  IssueNumber: String,
-  IssueSequenceNumber: String,
-  VolumeTag: String,
-  MaxIssue: String,
-  Price: String,
-  Publisher: Publisher,
-  UPCNumber: String,
-  ShortISBNNumber: String,
-  EANNumber: String,
-  CardsPerPack: String,
-  PackPerBox: String,
-  BoxPerCase: String,
-  DiscountCode: String,
-  Increment: String,
-  PrintDate: String,
-  FOCVendor: String,
-  ShipDate: String,
-  StandardRetailPrice: String,
-  Category: Category,
-  Genre: Genre,
-  BrandCode: String,
-  Mature: String,
-  Adult: String,
-  Caution1: String,
-  Caution2: String,
-  Caution3: String,
-  Writer: Person,
-  Artist: Person,
-  CoverArtist: Person,
-  AllianceSKU: String,
-  FOCDate: String,
-  Previews: [ Preview ]
-}, 
-  { collection: 'item' }
-);
+  stock_no: String,
+  parent_item: String,
+  title: String,
+  desc: String,
+  variant_desc: String,
+  series: Series,
+  issue_no: Number,
+  issue_seq_no: Number,
+  volume_tag: String,
+  max_issue: Number,
+  price: Number,
+  publisher: Publisher,
+  upc_no: String,
+  isbn_no: String,
+  ean_no: String,
+  cards_per_pack: Number,
+  pack_per_box: Number,
+  box_per_case: Number,
+  discount_code: String,  
+  print_date: Date,  
+  ship_date: Date,
+  srp: Number,
+  category: Category,
+  genre: Genre,  
+  mature: Boolean,
+  adult: Boolean,
+  caution1: String,
+  caution2: String,
+  caution3: String,
+  writer: Person,
+  artist: Person,
+  cover_artist: Person,  
+  foc_date: Date,
+  previews: [ Preview ]
+});
 
 
 async function search({ page = 1, pagesize = 24, previews, publisher, writer, artist }) {

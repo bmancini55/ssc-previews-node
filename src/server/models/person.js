@@ -2,31 +2,31 @@ let mongoose = require('mongoose');
 let melpers  = require('../helpers/mongoose');
 
 let Person = mongoose.Schema({
-  FullName: String,
-  Writer: Boolean,
-  Artist: Boolean,
-  CoverArtist: Boolean
-}, { collection: 'person' });
+  fullname: String,
+  writer: Boolean,
+  artist: Boolean,
+  coverartist: Boolean
+});
 
 
 async function findWriters() {
   return await this
-    .find({ Writer: true })
-    .sort({ FullName: 1 })
+    .find({ writer: true })
+    .sort({ fullname: 1 })
     .exec();
 }
 
 async function findArtists() {
   return await this
-    .find({ Artist: true })
-    .sort({ FullName: 1 })
+    .find({ artist: true })
+    .sort({ fullname: 1 })
     .exec();
 }
 
 async function findCoverArtists() {
   return await this
-    .find({ CoverArtist: true })
-    .sort({ FullName: 1 })
+    .find({ coverartist: true })
+    .sort({ fullname: 1 })
     .exec();
 }
 

@@ -1,10 +1,10 @@
 let mongoose = require('mongoose');
 let melpers  = require('../helpers/mongoose');
 
-let Genre = mongoose.Schema({
+let Series = mongoose.Schema({
   _id: String,
   name: String,  
 });
 
-Genre.plugin(melpers);
-module.exports = mongoose.model('genre', Genre);
+Series.plugin(melpers);
+module.exports = mongoose.model('series', Series);

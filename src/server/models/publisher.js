@@ -2,8 +2,8 @@ let mongoose = require('mongoose');
 let melpers  = require('../helpers/mongoose');
 
 let Publisher = mongoose.Schema({
-  Name: String,  
-}, { collection: 'publisher' });
+  name: String,  
+});
 
 Publisher.plugin(melpers);
 module.exports = mongoose.model('publisher', Publisher);

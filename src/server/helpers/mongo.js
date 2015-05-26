@@ -9,3 +9,4 @@ db.once('open', function (callback) {
   console.log('Mongo connected');
 });
 
+module.exports = db;
