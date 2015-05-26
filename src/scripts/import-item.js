@@ -21,7 +21,7 @@ async function processItems(preview) {
   let categories = await getOrAdd({
     items:    items,    
     name:     'categories',     
-    findOne:  (item) => Category.findOne({ _id: item.category }),
+    findOne:  (key)  => Category.findOne({ _id: key }),
     keyGen:   (item) => item.category, 
     insGen:   (item) => new Category({ _id: item.category, name: '' })
   });  
@@ -29,7 +29,7 @@ async function processItems(preview) {
   let genres = await getOrAdd({
     items:    items,    
     name:     'genres',    
-    findOne:  (item) => Genre.findOne({ _id: item.genre }),
+    findOne:  (key)  => Genre.findOne({ _id: key }),
     keyGen:   (item) => item.genre,
     insGen:   (item) => new Genre({ _id: item.genre, name: '' })
   });
@@ -89,6 +89,22 @@ async function processItems(preview) {
     let writer      = writers.get(item.writer);
     let artist      = artists.get(item.artist);
     let coverartist = coverartists.get(item.cover_artist);
+
+    let genreLink = null;
+    if(genre) {
+      genreLink = {
+        _id: genre._id,
+        name: genre.name
+      };
+    }
+
+    let categoryLink = null;
+    if(category) {
+      categoryLink = {
+        _id: category._id,
+        name: category.name
+      };
+    }
 
     let seriesLink = null;
     if(seri) {
@@ -153,8 +169,8 @@ async function processItems(preview) {
       print_date: Date.parse(item.prnt_date) ? new Date(item.prnt_date) : null,
       ship_date: Date.parse(item.ship_date) ? new Date(item.ship_date) : null,
       srp: parseFloat(item.srp),
-      category: category,
-      genre: genre,
+      category: categoryLink,
+      genre: genreLink,
       mature: item.mature === 'Y' ? true : false,
       adult: item.adult === 'Y' ? true : false,
       caution1: item.caut1,
@@ -179,15 +195,31 @@ async function processItems(preview) {
 
 async function getOrAdd({ items, name, findOne, keyGen, insGen, updGen = null }) {
   console.log('Processing %s', name);
-  let progress = new Progress(' -fetching  [:bar] :current/:total', { total: items.length, width: 50 });
+    
+  let uniques = new Map();
   let inserts = new Map();
   let updates = new Map();
-  
-  // iterate items and find what needs to be inserted
+
+  // fetch all unique keys
+  let progress1 = new Progress(' analyzing [:bar] :current/:total', { total: items.length, width: 50 });
   for (let item of items) {
-    let found = await findOne(item);
-    let key = keyGen(item);
-    let value = found || insGen(item);
+    let key     = keyGen(item);
+    let insert  = insGen(item);
+
+    // populate with insert item, which we will replace later with
+    // the actual value if it already exists
+    if(key !== '' && !uniques.has(key)) {
+      uniques.set(key, insert);
+    }
+
+    progress1.tick();
+  }
+  
+  // iterate keys and determine if we need to insert or update
+  let progress2 = new Progress(' fetching  [:bar] :current/:total', { total: uniques.size, width: 50 });
+  for (let key of uniques.keys()) {                   
+    let found = await findOne(key);    
+    let value = found || uniques.get(key);  // use found or insert statement
 
     if(found) {
       updates.set(key, value);
@@ -195,25 +227,25 @@ async function getOrAdd({ items, name, findOne, keyGen, insGen, updGen = null })
     else if(key !== '') {
       inserts.set(key, value);
     }
-    progress.tick();
+    progress2.tick();
   }
 
   // process the inserts
-  if(inserts.size > 0) {        
-    progress = new Progress(' -inserting [:bar] :current/:total', { total: inserts.size, width: 50 });
+  if(inserts.size > 0) {
+    let progress3 = new Progress(' inserting [:bar] :current/:total', { total: inserts.size, width: 50 });  
     for (let kvp of inserts) {
       await kvp[1].save();
-      progress.tick();
-    }
+      progress3.tick();
+    }  
   }
 
-  // process the updates
-  if(updGen && updates.size > 0) {
-    progress = new Progress(' -updating  [:bar] :current/:total', { total: updates.size, width: 50 });
+  // process the updates  
+  if(updGen && updates.size > 0) {    
+    let progress4 = new Progress(' updating  [:bar] :current/:total', { total: updates.size, width: 50 });
     for (let kvp of updates) {
       updGen(kvp[1]);
       await kvp[1].save();
-      progress.tick();
+      progress4.tick();
     }
   }
 
