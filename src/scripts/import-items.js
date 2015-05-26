@@ -11,8 +11,7 @@ let Q         = require('q');
  * Each item that gets processed will attach the corresponding 
  * sub elemetns and emit the appropriate event
  */
-async function processItems(preview) {
-  let { PreviewsItem, Category, Genre, Series, Publisher, Person, Item } = Models;
+async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher, Person, Item }) {  
   
   // retrieve the previews items to insert  
   let items = await PreviewsItem.findByPreview(preview);
@@ -263,7 +262,7 @@ async function getOrAdd({ items, name, findOne, keyGen, insGen, updGen = null })
 
 mongoose.on('open', function() {
   let preview = process.argv[2];
-  processItems(preview)
+  exec(preview, Models)
     .then(
       function() {
         mongoose.close();        

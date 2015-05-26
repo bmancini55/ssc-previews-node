@@ -54,7 +54,7 @@ let PreviewsItem = mongoose.Schema({
   alliance_sku: String,
   foc_date: String,
   copy : PreviewsCopy
-}, { collection: 'previewsitem' });
+});
 
 
 async function findByPreview(preview) {
