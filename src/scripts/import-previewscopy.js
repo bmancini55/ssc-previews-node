@@ -1,12 +1,15 @@
-let fs          = require('fs');
-let csv         = require('csv');
-let mongoose    = require('../helpers/mongo');
-let Models      = require('../models');
-let config      = require('../../config');
+require('babel/register');
 
-function exec(filepath, { PreviewsItem }) {
+let fs = require('fs');
+let csv = require('csv');
+let Q = require('q');
+let mongodb = require('../helpers/mongodb');
+let mappers = require('../mappers');
+
+function exec(filepath, { previewsitemMapper }) {
   return new Promise(function(resolve) {
 
+    let updates = [];
     let fields = [ 'diamd_no', 'title', 'price', 'preview', 'description' ];
     let file = fs.createReadStream(filepath);
     let parser = csv.parse({ delimiter: '\t', quote: '"' });  // tabs with quote
@@ -28,24 +31,18 @@ function exec(filepath, { PreviewsItem }) {
       .pipe(transform);      
 
     // insert the transformed object into the datastore
-    transform.on('data', function(data) {
-      
-      let query = { 
-        diamd_no: data.diamd_no 
-      };
-      let update = { 
-        $set: { copy: data }        
-      };
-
-      PreviewsItem.findOneAndUpdate(query, update, function(err, result) {
-        if(!err) console.log('Inserted: ' + data.diamd_no);
-      });
+    transform.on('data', function(data) {            
+      updates.push(previewsitemMapper
+        .updateCopy(data)
+        .then((result) => console.log('Inserted: ' + result.diamd_no))        
+      );
     });
 
     // close the connection when done transforming
     transform.on('finish', function() {
-      console.log('Insertions complete');
-      resolve();      
+      Q.all(updates)
+       .then(() => console.log('Updates complete'))
+       .then(resolve);     
     });
     
   });
@@ -53,23 +50,21 @@ function exec(filepath, { PreviewsItem }) {
 
 
 
-mongoose.on('open', function() {
-  let file = process.argv[2];
+let file = process.argv[2];
+if(!file) {
+  console.log('You must supply a file path');  
+}
 
-  if(!file) {
-    console.log('You must supply a file path');
-    mongoose.close();
-  }
-
-  exec(file, Models)
-    .then(
-      function() {
-        mongoose.close();        
-      }, 
-      function(err) {
-        mongoose.close();
-        console.log(err.toString());
-        console.log(err.stack);
-      }
-    );
+mongodb.connect();
+mongodb.on('open', function(db) {
+  let _mappers = mappers(db);  
+  exec(file, _mappers)
+    .then(function() {
+      mongodb.disconnect();
+    })
+    .catch(function(err) {        
+      mongodb.disconnect();
+      console.log(err.toString());
+      console.log(err.stack);
+    });
 });

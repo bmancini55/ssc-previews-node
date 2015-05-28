@@ -1,21 +1,19 @@
-let express   = require('express');
-let Models    = require('../models');
-let Item      = Models.Item;
-let Publisher = Models.Publisher;
-let Person    = Models.Person;
+let express = require('express');
+let mongodb = require('../helpers/mongodb');
+let elastic = require('../helpers/elasticsearch');
+let mappers = require('../mappers');
 
 async function index(req, res) {
+  let db = mongodb.db;
+  let es = elastic.client();
   let { page, pagesize, publisher, writer, artist, query } = req.query;  
+  let { publisherMapper, personMapper, itemMapper } = mappers(db, es);
   let previews  = 'MAY15';  
   
-  let publishers  = await Publisher.findAll({ 
-    page: 1, 
-    pagesize: 2147483647, 
-    sorter: { 'name': 1 } 
-  });
-  let writers     = await Person.findWriters();
-  let artists     = await Person.findArtists();
-  let items       = await Item.elasticsearch({
+  let publishers  = await publisherMapper.findAll();
+  let writers     = await personMapper.findWriters();
+  let artists     = await personMapper.findArtists();
+  let items       = await itemMapper.elasticsearch({
     page: page, 
     pagesize: pagesize,
     previews: previews,
@@ -42,5 +40,5 @@ async function index(req, res) {
 
 
 module.exports = {
-  index: (req, res) => index(req, res).then(null, function(err) { res.status(500).send(err.message); })
+  index: (req, res) => index(req, res).then(null, function(err) { res.status(500).send(err.stack); })
 };

@@ -1,12 +1,15 @@
-let fs          = require('fs');
-let csv         = require('csv');
-let mongoose    = require('../helpers/mongo');
-let Models      = require('../models');
-let config      = require('../../config');
+require('babel/register');
 
-function exec(filepath, { PreviewsItem }) {
+let fs = require('fs');
+let csv = require('csv');
+let Q = require('q');
+let mongodb = require('../helpers/mongodb');
+let mappers = require('../mappers');
+
+function exec(filepath, { previewsitemMapper }) {
   return new Promise(function(resolve) {
-
+    
+    let inserts = [];
     let fields = null;
     let file = fs.createReadStream(filepath);
     let parser = csv.parse({ delimiter: '\t', quote: '^' });  // tabs with no quotes
@@ -36,39 +39,40 @@ function exec(filepath, { PreviewsItem }) {
       .pipe(transform);      
 
     // insert the transformed object into the datastore
-    transform.on('data', function(data) {
-      console.log('Inserting: ' + data.diamd_no);    
-      let previewsitem = new PreviewsItem(data);
-      previewsitem.save();
+    transform.on('data', function(data) {        
+      inserts.push(previewsitemMapper
+        .insertOne(data)
+        .then((result) => console.log('Inserted: ' + result.diamd_no))
+      );
     });
 
     // close the connection when done transforming
     transform.on('finish', function() {
-      console.log('Insertions complete');    
-      resolve();
+      Q.all(inserts)
+       .then(() => console.log('Insertions complete'))
+       .then(resolve);      
     });
 
   });
 }
 
 
-mongoose.on('open', function() {
-  let file = process.argv[2];
 
-  if(!file) {
-    console.log('You must supply a file path');
-    mongoose.close();
-  }
+let file = process.argv[2];
+if(!file) {
+  console.log('You must supply a file path');  
+}
 
-  exec(file, Models)
-    .then(
-      function() {
-        mongoose.close();        
-      }, 
-      function(err) {
-        mongoose.close();
-        console.log(err.toString());
-        console.log(err.stack);
-      }
-    );
+mongodb.connect();
+mongodb.on('open', function(db) {
+  let _mappers = mappers(db);  
+  exec(file, _mappers)
+    .then(function() {
+      mongodb.disconnect();
+    })
+    .catch(function(err) {        
+      mongodb.disconnect();
+      console.log(err.toString());
+      console.log(err.stack);
+    });
 });

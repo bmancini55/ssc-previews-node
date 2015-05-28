@@ -10,11 +10,13 @@
   "license": "MIT",
   "dependencies": {
     "babel": "^5.4.3",
+    "bluebird": "^2.9.26",
     "chalk": "^1.0.0",
     "csv": "^0.4.2",
     "elasticsearch": "^4.0.2",
     "express": "^4.12.3",
     "express-hbs": "^0.8.4",
+    "mongodb": "^2.0.33",
     "mongoose": "^4.0.3",
     "mysql": "^2.6.2",
     "progress": "^1.1.8",

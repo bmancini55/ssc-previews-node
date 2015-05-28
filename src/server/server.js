@@ -5,12 +5,17 @@ var express     = require('express')
   , hbs         = require('express-hbs') 
   , timer       = require('response-time') 
   
-  , hbshelpers  = require('./helpers/handlebars')
-  , mongo       = require('./helpers/mongo')
-  , controllers = require('./controllers')  
+  , hbshelpers  = require('./helpers/handlebars')    
+  , controllers = require('./controllers')
+  , mongodb     = require('./helpers/mongodb')  
   , app
   ;
 
+// connect to mongo
+mongodb.connect();
+mongodb.on('open', function() {
+  console.log('Connected to MongoDB');
+});
 
 // Create Express App
 app = express();

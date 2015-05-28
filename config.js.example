@@ -5,7 +5,7 @@ module.exports = {
     user: 'user',
     password: 'password'
   },
-  mongo: {
+  mongodb: {
     connection: 'mongodb://localhost/ssctest',    
   },
   elasticsearch: {

@@ -1,79 +1,79 @@
 require('babel/register');
 
-let mongoose  = require('../helpers/mongo');
-let Models    = require('../models');
 let Progress  = require('progress');
-let ObjectId  = require('mongoose').Types.ObjectId;
-let Q         = require('q');
+let mongodb = require('../helpers/mongodb');
+let elastic = require('../helpers/elasticsearch');
+let mappers = require('../mappers');
+
 
 /**
  * Processes preview info and converts it into Items.
  * Each item that gets processed will attach the corresponding 
  * sub elemetns and emit the appropriate event
  */
-async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher, Person, Item }) {  
+async function exec(preview, { previewsitemMapper, categoryMapper, genreMapper, seriesMapper, publisherMapper, personMapper, itemMapper }) {  
   
   // retrieve the previews items to insert  
-  let items = await PreviewsItem.findByPreview(preview);
+  let items = await previewsitemMapper.findByPreview(preview);
   console.log('\nFound %s Previews Items to process\n',  items.length);
     
   let categories = await getOrAdd({
     items:    items,    
     name:     'categories',     
-    findOne:  (key)  => Category.findOne({ _id: key }),
     keyGen:   (item) => item.category, 
-    insGen:   (item) => new Category({ _id: item.category, name: '' })
+    findOne:  (item) => categoryMapper.findOne({ _id: item.category }),    
+    insert:   (item) => categoryMapper.insertOne({ _id: item.category, name: '' })
   });  
 
   let genres = await getOrAdd({
     items:    items,    
-    name:     'genres',    
-    findOne:  (key)  => Genre.findOne({ _id: key }),
+    name:     'genres',        
     keyGen:   (item) => item.genre,
-    insGen:   (item) => new Genre({ _id: item.genre, name: '' })
+    findOne:  (item) => genreMapper.findOne({ _id: item.genre }),
+    insert:   (item) => genreMapper.insertOne({ _id: item.genre, name: '' })
   });
 
   let series = await getOrAdd({
     items:    items,
     name:     'series',
-    findOne:  (key)  => Series.findOne({ _id: key }),
     keyGen:   (item) => item.series_code,
-    insGen:   (item) => new Series({ _id: item.series_code, name: item.main_desc })
+    findOne:  (item) => seriesMapper.findOne({ _id: item.series_code }),    
+    insert:   (item) => seriesMapper.insertOne({ _id: item.series_code, name: item.main_desc })
   });  
 
   let publishers = await getOrAdd({
     items:    items,
-    name:     'publishers',
-    findOne:  (key)  => Publisher.findOne({ name: key }),
+    name:     'publishers',    
     keyGen:   (item) => item.publisher,
-    insGen:   (item) => new Publisher({ name: item.publisher })
+    findOne:  (item) => publisherMapper.findOne({ name: item.publisher }),
+    insert:   (item) => publisherMapper.insertOne({ name: item.publisher })
   });
 
   let writers = await getOrAdd({
     items:    items, 
-    name:     'writers',
-    findOne:  (key)  => Person.findOne({ fullname: key }),
+    name:     'writers',    
     keyGen:   (item) => item.writer,
-    insGen:   (item) => new Person({ fullname: item.writer, writer: true, artist: false, coverartist: false }),
-    updGen:   (inst) => inst.writer = true
+    findOne:  (item) => personMapper.findOne({ fullname: item.writer }),
+    insert:   (item) => personMapper.insertOne({ fullname: item.writer, writer: true, artist: false, cover_artist: false }),
+    update:   (item) => personMapper.findOneAndSet({ fullname: item.writer }, { writer: true })
   });
 
   let artists = await getOrAdd({
     items:    items,
-    name:     'artists',
-    findOne:  (key)  => Person.findOne({ fullname: key }),
+    name:     'artists',    
     keyGen:   (item) => item.artist,
-    insGen:   (item) => new Person({ fullname: item.artist, writer: false, artist: true, coverartist: false }),
-    updGen:   (inst) => inst.artist = true
+    findOne:  (item) => personMapper.findOne({ fullname: item.artist }),
+    insert:   (item) => personMapper.insertOne({ fullname: item.artist, writer: false, artist: true, cover_artist: false }),
+    update:   (item) => personMapper.findOneAndSet({ fullname: item.artist }, { artist: true })
   });
 
   let coverartists = await getOrAdd({
     items:    items,
-    name:     'cover artists',
-    findOne:  (key)  => Person.findOne({ fullname: key }),
+    name:     'cover artists',    
     keyGen:   (item) => item.cover_artist,
-    insGen:   (item) => new Person({ fullname: item.cover_artist, writer: false, artist: false, coverartist: true }),
-    updGen:   (inst) => inst.coverartist = true
+    findOne:  (item) => personMapper.findOne({ fullname: item.cover_artist }),
+    insert:   (item) => personMapper.insertOne({ fullname: item.cover_artist, writer: false, artist: false, cover_artist: true }),
+    update:   (item) => personMapper.findOneAndSet({ fullname: item.cover_artist }, { cover_artist: true })
   });
 
 
@@ -89,75 +89,34 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
     let artist      = artists.get(item.artist);
     let coverartist = coverartists.get(item.cover_artist);
 
-    let genreLink = null;
-    if(genre) {
-      genreLink = {
-        _id: genre._id,
-        name: genre.name
-      };
-    }
+    let writerLink = writer ? {
+      _id: writer._id,
+      fullname: writer.fullname
+    } : null;
 
-    let categoryLink = null;
-    if(category) {
-      categoryLink = {
-        _id: category._id,
-        name: category.name
-      };
-    }
+    let artistLink = artist ? {
+      _id: artist._id,
+      fullname: artist.fullname
+    } : null;
 
-    let seriesLink = null;
-    if(seri) {
-      seriesLink = { 
-        _id: seri._id,
-        name: seri.name
-      };
-    }
-
-    let publisherLink = null;
-    if(publisher) {
-      publisherLink = {
-        _id: publisher._id,
-        name: publisher.name
-      };
-    }
-
-    let writerLink = null;
-    if(writer) {
-      writerLink = {
-        _id: writer._id,
-        fullname: writer.fullname
-      };
-    }
-
-    let artistLink = null;
-    if(artist) {
-      artistLink = {
-        _id: artist._id,
-        fullname: artist.fullname
-      };
-    }
-
-    let coverartistLink = null;
-    if(coverartist) {
-      coverartistLink = {
-        _id: coverartist._id,
-        fullname: coverartist.fullname
-      };
-    }
-
-    let newItem = new Item({
+    let coverartistLink = coverartist ? {
+      _id: coverartist._id,
+      fullname: coverartist.fullname
+    } : null;
+    
+    let newItem = {
       stock_no: item.stock_no,
       parent_item: item.parent_item_no_alt,
       title: item.copy.title,
       desc: item.copy.preview + '\n' + item.copy.description,
       variant_desc: item.variant_desc,
-      series: seriesLink,
+      series: seri,
       issue_no: parseInt(item.issue_no) || null,
       issue_seq_no: parseInt(item.issue_seq_no) || null,
       volume_tag: item.volume_tag,
       max_issue: parseInt(item.max_issue) || null,
       price: parseFloat(item.price) || null,
-      publisher: publisherLink,
+      publisher: publisher,
       upc_no: item.upc_no,
       isbn_no: item.short_isbn_no,
       ean_no: item.ean_no,
@@ -168,8 +127,8 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
       print_date: Date.parse(item.prnt_date) ? new Date(item.prnt_date) : null,
       ship_date: Date.parse(item.ship_date) ? new Date(item.ship_date) : null,
       srp: parseFloat(item.srp),
-      category: categoryLink,
-      genre: genreLink,
+      category: category,
+      genre: genre,
       mature: item.mature === 'Y' ? true : false,
       adult: item.adult === 'Y' ? true : false,
       caution1: item.caut1,
@@ -183,10 +142,13 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
           previews_no: item.diamd_no,
           page: item.page
       }]
-    });
+    };
 
-    await newItem.save();
-    await newItem.saveElasticsearch();
+    // save in mongo
+    newItem = await itemMapper.insertOne(newItem);
+
+    // save in elasticsearch
+    await itemMapper.index(newItem);
     
     progress.tick();
   }
@@ -194,86 +156,96 @@ async function exec(preview, { PreviewsItem, Category, Genre, Series, Publisher,
     
 }
 
-async function getOrAdd({ items, name, findOne, keyGen, insGen, updGen = null }) {
+/** 
+ * Internal function for processing joinable data.
+ * This function will iterate the items and determine what
+ * inserts and updates need to be performed for the joined data
+ */
+async function getOrAdd({ items, name, findOne, keyGen, insert, update }) {
   console.log('Processing %s', name);
     
   let uniques = new Map();
   let inserts = new Map();
   let updates = new Map();
+  let results = new Map();
 
-  // fetch all unique keys
+  // fetch all unique keys and the corresponding item it is associated with
   let progress1 = new Progress(' analyzing [:bar] :current/:total', { total: items.length, width: 50 });
   for (let item of items) {
-    let key     = keyGen(item);
-    let insert  = insGen(item);
 
-    // populate with insert item, which we will replace later with
-    // the actual value if it already exists
-    if(key !== '' && !uniques.has(key)) {
-      uniques.set(key, insert);
+    let key = keyGen(item);    
+
+    if(key && key !== '' && !uniques.has(key)) {
+      uniques.set(key, item);
     }
-
     progress1.tick();
   }
   
-  // iterate keys and determine if we need to insert or update
+  // iterate unique keys to create insert and update expressions
   let progress2 = new Progress(' fetching  [:bar] :current/:total', { total: uniques.size, width: 50 });
   for (let key of uniques.keys()) {                   
-    let found = await findOne(key);    
-    let value = found || uniques.get(key);  // use found or insert statement
+
+    let item = uniques.get(key);
+    let found = await findOne(item);
 
     if(found) {
-      updates.set(key, value);
+      if(update) {
+        updates.set(key, () => update(item));
+      } else {
+        results.set(key, found);
+      }
     }
     else if(key !== '') {
-      inserts.set(key, value);
+      inserts.set(key, () => insert(item));
     }
     progress2.tick();
   }
 
-  // process the inserts  
+  // process the inserts expressions
   if(inserts.size > 0) {
     let progress3 = new Progress(' inserting [:bar] :current/:total', { total: inserts.size, width: 50 });  
-    for (let kvp of inserts) {
-      await kvp[1].save();
+    for (let key of inserts.keys()) {
+      let expr = inserts.get(key);
+      let result = await expr();
+      results.set(key, result);
       progress3.tick();
     }  
   }
 
-  // process the updates  
-  if(updGen && updates.size > 0) {    
+  // process the updates expressions
+  if(updates.size > 0) {
     let progress4 = new Progress(' updating  [:bar] :current/:total', { total: updates.size, width: 50 });
-    for (let kvp of updates) {
-      updGen(kvp[1]);
-      await kvp[1].save();
+    for (let key of updates.keys()) {      
+      let expr = updates.get(key);
+      let result = await expr();
+      results.set(key, result);
       progress4.tick();
     }
   }
 
   // create results by combining existing with insertions
-  let results = new Map();
-  for (let result of updates) 
-    results.set(result[0], result[1]);
-  for (let result of inserts) 
-    results.set(result[0], result[1]);
-
   console.log('');  
   return results;
 }
 
 
-mongoose.on('open', function() {
-  let preview = process.argv[2];
-  exec(preview, Models)
-    .then(
-      function() {
-        mongoose.close();        
-        console.log('\nProcessing complete');
-      }, 
-      function(err) {
-        mongoose.close();
-        console.log(err.toString());
-        console.log(err.stack);
-      }
-    );
+
+let preview = process.argv[2];
+if(!preview) {
+  console.log('You must specify a preview');  
+}
+
+mongodb.connect();
+mongodb.on('open', function(db) {
+  let es = elastic.client();
+  let _mappers = mappers(db, es);  
+  exec(preview, _mappers)
+    .then(function() {
+      mongodb.disconnect();
+    })
+    .catch(function(err) {        
+      mongodb.disconnect();
+      console.log(err.toString());
+      console.log(err.stack);
+    });
 });
